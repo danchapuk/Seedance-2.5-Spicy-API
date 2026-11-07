@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seedance 2.5 Studio — Multi-Provider AI Video Workbench</title>
+  <meta name="description" content="Production interface for ByteDance Seedance 2.5 video generation across BytePlus ModelArk, fal.ai, WaveSpeedAI, and Replicate. Supports Text-to-Video, Image-to-Video, Omni Reference, Video Edit, Extend, and Motion Control." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="studio-header">
+    <div class="brand-group">
+      <div class="brand-mark" aria-hidden="true">S2.5</div>
+      <div>
+        <h1 class="brand-title">Seedance 2.5 Studio</h1>
+        <div class="brand-subtitle">Multi-Provider Video Generation &amp; Testing Workbench</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="control-pill">
+        <label for="provider-select">Provider</label>
+        <select id="provider-select" class="studio-select" aria-label="Select API Provider">
+          <option value="byteplus">BytePlus ModelArk (Official)</option>
+          <option value="fal">fal.ai (US Enterprise)</option>
+          <option value="wavespeed">WaveSpeedAI (REST v3)</option>
+          <option value="replicate">Replicate (Unified)</option>
+          <option value="muapi">MuAPI (Legacy)</option>
+        </select>
+      </div>
+
+      <button type="button" id="compare-providers-btn" class="btn-secondary">
+        Compare Providers
+      </button>
+
+      <label class="sandbox-switch" for="sandbox-toggle">
+        <input type="checkbox" id="sandbox-toggle" checked />
+        <span>Sandbox Test Mode</span>
+        <span id="mode-indicator-badge" class="sandbox-badge">FREE MOCK</span>
+      </label>
+
+      <div class="control-pill">
+        <label id="api-key-label" for="api-key-input">ARK_API_KEY</label>
+        <input
+          type="password"
+          id="api-key-input"
+          class="studio-input"
+          placeholder="Optional in Sandbox Mode"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+  </header>
+
+  <div class="studio-workspace">
+    <!-- Left Navigation Rail -->
+    <nav class="mode-rail" aria-label="Generation Workflows">
+      <div class="rail-heading">Workflows (7)</div>
+      <button type="button" class="mode-tab active" id="tab-text_to_video" data-mode="text_to_video">
+        <span>Text to Video</span>
+        <span class="mode-code">T2V</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-image_to_video" data-mode="image_to_video">
+        <span>Image to Video</span>
+        <span class="mode-code">I2V</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-first_last_frame" data-mode="first_last_frame">
+        <span>First &amp; Last Frame</span>
+        <span class="mode-code">F&amp;L</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-omni_reference" data-mode="omni_reference">
+        <span>Omni Reference</span>
+        <span class="mode-code">OMNI</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-video_edit" data-mode="video_edit">
+        <span>Video Edit</span>
+        <span class="mode-code">EDIT</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-video_extend" data-mode="video_extend">
+        <span>Video Extend</span>
+        <span class="mode-code">EXT</span>
+      </button>
+      <button type="button" class="mode-tab" id="tab-motion_control" data-mode="motion_control">
+        <span>Motion Control</span>
+        <span class="mode-code">MOT</span>
+      </button>
+
+      <div class="provider-card" id="active-provider-card">
+        <div class="provider-card-title">
+          <span id="provider-card-name">BytePlus ModelArk</span>
+          <span id="provider-card-badge" class="provider-card-badge">Official</span>
+        </div>
+        <p id="provider-card-notes" class="provider-card-desc">
+          First-party ByteDance international cloud API. Supports 480p drafts, 30s clips, and 50 multimodal references.
+        </p>
+        <div id="provider-card-host" class="provider-card-meta">
+          https://ark.ap-southeast.bytepluses.com/api/v3
+        </div>
+      </div>
+    </nav>
+
+    <!-- Center Composer -->
+    <main class="composer-pane">
+      <div class="mode-banner">
+        <div>
+          <h2 id="active-mode-title">Text to Video</h2>
+          <p id="active-mode-desc">
+            Generate photorealistic 4K video directly from a high-contrast text prompt.
+          </p>
+        </div>
+        <div id="active-endpoint-pill" class="endpoint-pill">
+          POST /contents/generations/tasks
+        </div>
+      </div>
+
+      <div id="feedback-banner" class="toast-banner" role="status" aria-live="polite"></div>
+
+      <!-- Prompt Field -->
+      <div class="field-group" id="group-prompt">
+        <div class="field-header">
+          <label class="field-label" for="prompt-input">Creative Prompt</label>
+          <span class="field-hint" id="prompt-hint">Required for this workflow</span>
+        </div>
+        <textarea
+          id="prompt-input"
+          class="studio-textarea"
+          placeholder="Describe camera movement, subject action, lighting, atmosphere, and audio cues..."
+        >A high-contrast, adrenaline-fueled chase through a rain-soaked neon megacity at night, sparks and shattering glass in slow motion, aggressive handheld camera energy, 4K cinematic quality.</textarea>
+        <div class="preset-row">
+          <span class="field-hint">Quick Test Presets:</span>
+          <button type="button" class="preset-chip" id="preset-cyberpunk" data-preset="cyberpunk">Neon Chase (T2V)</button>
+          <button type="button" class="preset-chip" id="preset-dolly" data-preset="dolly">Handheld Alley Dolly (I2V)</button>
+          <button type="button" class="preset-chip" id="preset-omni" data-preset="omni">Multi-Ref Park Sequence (Omni)</button>
+          <button type="button" class="preset-chip" id="preset-edit" data-preset="edit">Golden Hour Relight (Edit)</button>
+        </div>
+      </div>
+
+      <!-- Local Media Upload Helper -->
+      <div class="upload-bar" id="media-upload-bar">
+        <div class="upload-bar-info">
+          <strong>Local Media Upload</strong> — Upload an image, video, or audio file to auto-fill the active URL field below.
+        </div>
+        <div>
+          <input type="file" id="file-upload-input" class="hidden" accept="image/*,video/*,audio/*" />
+          <button type="button" id="file-upload-btn" class="btn-secondary">Upload File</button>
+        </div>
+      </div>
+
+      <!-- Single Source Image & Last Image (I2V / Extend) -->
+      <div class="grid-2 hidden" id="group-single-images">
+        <div class="field-group" id="subgroup-image-url">
+          <label class="field-label" for="image-url-input">Source Image URL (First Frame)</label>
+          <input
+            type="url"
+            id="image-url-input"
+            class="studio-input"
+            placeholder="https://example.com/start-frame.jpg"
+            value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280"
+          />
+        </div>
+        <div class="field-group" id="subgroup-last-image">
+          <label class="field-label" for="last-image-input">Target Last Frame Image URL (Optional)</label>
+          <input
+            type="url"
+            id="last-image-input"
+            class="studio-input"
+            placeholder="https://example.com/end-frame.jpg"
+          />
+        </div>
+      </div>
+
+      <!-- Source Video URL (Video Edit / Video Extend / Motion Control) -->
+      <div class="field-group hidden" id="group-video-url">
+        <div class="field-header">
+          <label class="field-label" for="video-url-input">Reference / Input Video URL</label>
+          <span class="field-hint">Videos &gt; 30s are automatically trimmed to 30s</span>
+        </div>
+        <input
+          type="url"
+          id="video-url-input"
+          class="studio-input"
+          placeholder="https://example.com/reference-performance.mp4"
+          value="https://assets.seedance-sandbox.local/sample/input-motion.mp4"
+        />
+      </div>
+
+      <!-- Multi-Image / Multi-Video / Multi-Audio Reference Inputs -->
+      <div class="field-group hidden" id="group-images-list">
+        <div class="field-header">
+          <label class="field-label" for="images-list-input" id="images-list-label">Reference Image URLs (One per line or comma-separated)</label>
+          <span class="field-hint" id="images-list-hint">Up to 30 URLs</span>
+        </div>
+        <textarea
+          id="images-list-input"
+          class="studio-textarea"
+          style="min-height: 68px;"
+          placeholder="https://example.com/frame1.jpg&#10;https://example.com/frame2.jpg"
+        >https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1280
+https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280</textarea>
+      </div>
+
+      <div class="grid-2 hidden" id="group-omni-media">
+        <div class="field-group" id="subgroup-videos-list">
+          <label class="field-label" for="videos-list-input">Reference Video URLs (Up to 10)</label>
+          <textarea
+            id="videos-list-input"
+            class="studio-textarea"
+            style="min-height: 64px;"
+            placeholder="https://example.com/camera-motion.mp4"
+          ></textarea>
+        </div>
+        <div class="field-group" id="subgroup-audios-list">
+          <label class="field-label" for="audios-list-input">Reference Audio URLs (Up to 10)</label>
+          <textarea
+            id="audios-list-input"
+            class="studio-textarea"
+            style="min-height: 64px;"
+            placeholder="https://example.com/soundtrack.mp3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Omni Task Type & Draft Finalize ID -->
+      <div class="grid-2" id="group-special-params">
+        <div class="field-group hidden" id="subgroup-omni-type">
+          <label class="field-label" for="omni-task-type-select">Omni Reference Subtask Type</label>
+          <select id="omni-task-type-select" class="studio-select">
+            <option value="auto">auto (Default)</option>
+            <option value="reference">reference (Multi-modal conditioning)</option>
+            <option value="edit">edit (Requires aspect_ratio=adaptive &amp; duration=-1)</option>
+            <option value="extend">extend (Requires aspect_ratio=adaptive)</option>
+          </select>
+        </div>
+        <div class="field-group" id="subgroup-draft-id">
+          <label class="field-label" for="draft-request-id-input">Finalize Draft Request ID (Optional)</label>
+          <input
+            type="text"
+            id="draft-request-id-input"
+            class="studio-input"
+            placeholder="Paste completed 480p draft_request_id to render 1080p"
+          />
+        </div>
+      </div>
+
+      <!-- Core Generation Parameters -->
+      <div class="grid-3">
+        <div class="field-group" id="subgroup-resolution">
+          <label class="field-label" for="resolution-select">Resolution</label>
+          <select id="resolution-select" class="studio-select">
+            <option value="480p">480p (Fast / Draft Tier)</option>
+            <option value="720p" selected>720p (Standard HD)</option>
+            <option value="1080p">1080p (Full HD Production)</option>
+            <option value="4k">4K (Ultra HD)</option>
+          </select>
+        </div>
+
+        <div class="field-group" id="subgroup-aspect-ratio">
+          <label class="field-label" for="aspect-ratio-select">Aspect Ratio</label>
+          <select id="aspect-ratio-select" class="studio-select">
+            <option value="16:9" selected>16:9 (Widescreen)</option>
+            <option value="9:16">9:16 (Vertical)</option>
+            <option value="1:1">1:1 (Square)</option>
+            <option value="4:3">4:3 (Classic)</option>
+            <option value="3:4">3:4 (Portrait)</option>
+            <option value="21:9">21:9 (Anamorphic Cinema)</option>
+            <option value="9:21">9:21 (Tall Cinema)</option>
+            <option value="adaptive">adaptive (Match Input)</option>
+          </select>
+        </div>
+
+        <div class="field-group" id="subgroup-duration">
+          <div class="field-header">
+            <label class="field-label" for="duration-input">Duration (Seconds)</label>
+            <span class="field-hint" id="duration-range-label">4–16s</span>
+          </div>
+          <input
+            type="number"
+            id="duration-input"
+            class="studio-input"
+            min="-1"
+            max="30"
+            value="5"
+          />
+        </div>
+      </div>
+
+      <!-- Seed & Boolean Flags -->
+      <div class="toggles-grid">
+        <label class="toggle-card" id="toggle-audio-wrap" for="generate-audio-checkbox">
+          <input type="checkbox" id="generate-audio-checkbox" checked />
+          <span>Synchronized Audio</span>
+        </label>
+
+        <label class="toggle-card" id="toggle-camera-wrap" for="camera-fixed-checkbox">
+          <input type="checkbox" id="camera-fixed-checkbox" />
+          <span>Fixed Camera Tripod</span>
+        </label>
+
+        <label class="toggle-card" id="toggle-bitrate-wrap" for="high-bitrate-checkbox">
+          <input type="checkbox" id="high-bitrate-checkbox" />
+          <span>High Bitrate Master</span>
+        </label>
+
+        <label class="toggle-card" id="toggle-draft-wrap" for="draft-checkbox">
+          <input type="checkbox" id="draft-checkbox" />
+          <span>480p Draft Mode</span>
+        </label>
+
+        <div class="control-pill" id="subgroup-seed">
+          <label for="seed-input">Seed</label>
+          <input type="number" id="seed-input" class="studio-input" value="-1" style="width: 90px;" />
+        </div>
+      </div>
+
+      <!-- Submit Bar -->
+      <div class="action-footer">
+        <div class="cost-estimate">
+          <span class="cost-label">Estimated Run Cost (<span id="cost-provider-label">BytePlus</span>)</span>
+          <span class="cost-value" id="cost-estimate-value">$0.00 (Sandbox Mode)</span>
+        </div>
+        <button type="button" id="generate-btn" class="btn-primary">
+          <span>Generate Video</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Right Stage: Monitor + Live Request Inspector + Task History -->
+    <aside class="stage-pane" aria-label="Output Monitor and Request Inspector">
+      <div class="stage-card">
+        <div class="stage-card-header">
+          <span>Program Output Monitor</span>
+          <span id="monitor-status-badge" class="status-tag processing">IDLE</span>
+        </div>
+        <div class="video-viewport" id="video-viewport">
+          <div class="viewport-empty" id="viewport-empty-text">
+            Submit a task in Sandbox or Live Mode to preview the generated video stream here.
+          </div>
+          <video id="output-video" class="hidden" controls playsinline loop></video>
+        </div>
+        <div class="task-actions hidden" id="monitor-actions">
+          <a id="download-video-link" class="btn-secondary" href="#" download style="text-decoration: none;">Download MP4</a>
+          <button type="button" id="finalize-draft-btn" class="btn-secondary hidden">
+            Finalize Draft to 1080p
+          </button>
+        </div>
+      </div>
+
+      <div class="stage-card">
+        <div class="stage-card-header">
+          <span>Provider Request Inspector</span>
+          <button type="button" id="copy-curl-btn" class="btn-secondary" style="padding: 3px 8px; font-size: 11px;">
+            Copy cURL
+          </button>
+        </div>
+        <pre id="request-inspector" class="code-pre"></pre>
+      </div>
+
+      <div class="stage-card">
+        <div class="stage-card-header">
+          <span>Task Queue &amp; Polling Log</span>
+          <span id="queue-count-label">0 Tasks</span>
+        </div>
+        <div class="task-list" id="task-queue-list">
+          <div class="viewport-empty" style="padding: 12px;">No tasks submitted yet.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Provider Comparison Modal -->
+  <div class="modal-backdrop" id="provider-modal" role="dialog" aria-modal="true" aria-labelledby="provider-modal-title">
+    <div class="modal-dialog">
+      <div class="mode-banner" style="padding-bottom: 12px;">
+        <div>
+          <h2 id="provider-modal-title">Reliable Seedance 2.5 API Providers vs. MuAPI</h2>
+          <p>Select any provider below to immediately switch the Studio and SDK routing.</p>
+        </div>
+        <button type="button" id="close-modal-btn" class="btn-secondary">Close</button>
+      </div>
+
+      <table class="provider-table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Tier / Backing</th>
+            <th>Auth Env Var</th>
+            <th>Est. 480p / 720p</th>
+            <th>Key Advantage</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>BytePlus ModelArk</strong></td>
+            <td>Official ByteDance Cloud</td>
+            <td><code>ARK_API_KEY</code></td>
+            <td>$0.10/s · $0.23/s</td>
+            <td>First-party SLA, lowest base cost, native 50-ref &amp; 7-day draft tokens</td>
+            <td><button type="button" class="btn-secondary select-provider-btn" data-provider="byteplus">Use BytePlus</button></td>
+          </tr>
+          <tr>
+            <td><strong>fal.ai</strong></td>
+            <td>US Enterprise Queue</td>
+            <td><code>FAL_KEY</code></td>
+            <td>$0.22/s · $0.47/s</td>
+            <td>US-hosted enterprise reliability, zero cold starts, official partner</td>
+            <td><button type="button" class="btn-secondary select-provider-btn" data-provider="fal">Use fal.ai</button></td>
+          </tr>
+          <tr>
+            <td><strong>WaveSpeedAI</strong></td>
+            <td>Verified HF Partner</td>
+            <td><code>WAVESPEED_API_KEY</code></td>
+            <td>$0.18/s · $0.36/s</td>
+            <td>Dedicated REST v3 routes for all 7 workflows &amp; drop-in prediction polling</td>
+            <td><button type="button" class="btn-secondary select-provider-btn" data-provider="wavespeed">Use WaveSpeed</button></td>
+          </tr>
+          <tr>
+            <td><strong>Replicate</strong></td>
+            <td>US Cloud Platform</td>
+            <td><code>REPLICATE_API_TOKEN</code></td>
+            <td>$0.20/s · $0.40/s</td>
+            <td>Unified <code>bytedance/seedance-2.5</code> multimodal endpoint with sync/async</td>
+            <td><button type="button" class="btn-secondary select-provider-btn" data-provider="replicate">Use Replicate</button></td>
+          </tr>
+          <tr>
+            <td><strong>MuAPI</strong></td>
+            <td>Third-Party Wrapper</td>
+            <td><code>MUAPI_API_KEY</code></td>
+            <td>$0.60+ / run</td>
+            <td>Original repository default (maintained for backward compatibility)</td>
+            <td><button type="button" class="btn-secondary select-provider-btn" data-provider="muapi">Use MuAPI</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

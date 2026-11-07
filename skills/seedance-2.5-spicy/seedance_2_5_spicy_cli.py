@@ -10,7 +10,13 @@ from seedance_2_5_spicy_api import Seedance25SpicyAPI
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Seedance 2.5 Spicy CLI Wrapper for OpenClaw Skill")
+    parser = argparse.ArgumentParser(description="Seedance 2.5 Spicy CLI Wrapper (BytePlus, fal.ai, WaveSpeedAI, Replicate, MuAPI)")
+    parser.add_argument(
+        "--provider",
+        choices=["byteplus", "fal", "wavespeed", "replicate", "muapi"],
+        default=None,
+        help="API provider to route requests through (default: SEEDANCE_PROVIDER env or auto-detect)",
+    )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     t2v = subparsers.add_parser("t2v", help="Generate video from text (Spicy)")
@@ -101,6 +107,9 @@ def main():
     status = subparsers.add_parser("status", help="Get task status")
     status.add_argument("--request_id", required=True, help="Request ID")
 
+    upload = subparsers.add_parser("upload", help="Upload a local media file (image, video, audio) for generation tasks")
+    upload.add_argument("--file", required=True, help="Path to the local file to upload")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -108,7 +117,7 @@ def main():
         return
 
     try:
-        api = Seedance25SpicyAPI()
+        api = Seedance25SpicyAPI(provider=args.provider)
 
         if args.command == "t2v":
             res = api.text_to_video(args.prompt, args.aspect_ratio, args.duration, args.resolution,
@@ -136,6 +145,10 @@ def main():
                                       args.duration, args.seed, args.high_bitrate, args.generate_audio)
         elif args.command == "status":
             res = api.get_result(args.request_id)
+            print(json.dumps(res, indent=2))
+            return
+        elif args.command == "upload":
+            res = api.upload_file(args.file)
             print(json.dumps(res, indent=2))
             return
 

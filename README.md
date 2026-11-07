@@ -1,4 +1,4 @@
-# Seedance 2.5 Spicy API: Python Wrapper for ByteDance's Relaxed-Moderation AI Video Generator
+# Seedance 2.5 Spicy API & Web Studio: Multi-Provider Python Wrapper & UI for ByteDance's Video Generator
 
 [![Powered by MuAPI](https://img.shields.io/badge/Powered%20by-MuAPI-6366f1?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMSAxNHYtNGgtMnYtMmg0djZoLTJ6bTAtOFY2aDJ2MmgtMnoiLz48L3N2Zz4=)](https://muapi.ai?utm_source=github&utm_medium=badge&utm_campaign=seedance-2.5-spicy-api)
 
@@ -7,9 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 
-The most comprehensive Python wrapper for the **Seedance 2.5 Spicy API** (developed by ByteDance), delivered via [muapi.ai](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=seedance-2.5-spicy-api). Seedance 2.5 Spicy is the relaxed-moderation variant of the [Seedance 2.5](https://github.com/Anil-matcha/Seedance-2-API) flagship model — native 4K, up to 30-second clips, native audio, and precise camera trajectory control, with **reduced content-safety filtering** and more dramatic, higher-contrast motion than the standard tier.
+The most comprehensive Python SDK, MCP server, and Web Studio interface for ByteDance's **Seedance 2.5 Spicy API** — supporting official **BytePlus ModelArk**, **fal.ai**, **WaveSpeedAI**, **Replicate**, and **MuAPI**. Seedance 2.5 Spicy is the relaxed-moderation variant of the [Seedance 2.5](https://github.com/Anil-matcha/Seedance-2-API) flagship model — native 4K, up to 30-second clips, native audio, and precise camera trajectory control, with **reduced content-safety filtering** and dramatic, high-contrast motion.
 
-> ⚠️ **Content policy notice**: "Spicy" means reduced automated content-safety filtering, not an anything-goes endpoint. Generated content still must comply with MuAPI's and the underlying provider's terms of service and applicable law. Do not use this API to generate content involving minors, non-consensual imagery, or other prohibited material.
+> ⚠️ **Content policy notice**: "Spicy" means reduced automated content-safety filtering, not an anything-goes endpoint. Generated content still must comply with the chosen provider's terms of service and applicable law. Do not use this API to generate content involving minors, non-consensual imagery, or other prohibited material.
 
 ## Related Projects
 
@@ -61,12 +61,44 @@ pip install -r requirements.txt
 ```
 
 ### Configuration
-Create a `.env` file in the root directory and add your [MuAPI](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=seedance-2.5-spicy-api) API key:
+Create a `.env` file in the root directory and set the API key for your chosen provider:
+
 ```env
+# BytePlus ModelArk (Official ByteDance international cloud - Recommended, lowest cost)
+ARK_API_KEY=your_byteplus_api_key_here
+
+# fal.ai (US Enterprise Queue - Recommended for US infrastructure)
+FAL_KEY=your_fal_key_here
+
+# WaveSpeedAI (Drop-in REST v3)
+WAVESPEED_API_KEY=your_wavespeed_key_here
+
+# Replicate (bytedance/seedance-2.5)
+REPLICATE_API_TOKEN=your_replicate_token_here
+
+# MuAPI (Legacy wrapper)
 MUAPI_API_KEY=your_muapi_api_key_here
+
+# Optional: Default provider (byteplus, fal, wavespeed, replicate, muapi)
+SEEDANCE_PROVIDER=byteplus
 ```
 
 ---
+
+## 🎨 Seedance 2.5 Web Studio Interface
+
+A dark-mode, production-ready web studio interface with live Request Inspector and built-in Sandbox mode:
+
+```bash
+# Start the studio web server
+uvicorn server:app --host 0.0.0.0 --port 8000
+```
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+- ⚡ **Sandbox Test Engine**: Test prompts, camera settings, aspect ratios, and media uploads with zero API cost.
+- 🔄 **Multi-Provider Switcher**: Switch on the fly between BytePlus, fal.ai, WaveSpeedAI, Replicate, and MuAPI.
+- 🔍 **Live Request Inspector**: See exact provider HTTP endpoints, authentication headers, and translated JSON payloads in real time.
+- 🎞️ **Draft → Finalize**: 1-click upgrade from cheap 480p preview drafts to 1080p full-res renders.
 
 ## 🤖 Seedance 2.5 Spicy MCP Server
 
@@ -253,19 +285,15 @@ curl --location --request POST "https://api.muapi.ai/api/v1/seedance-2.5-spicy-m
 
 ---
 
-## 💰 Pricing
+## 💰 Providers & Pricing Comparison
 
-| Endpoint | Cost |
-|---|---|
-| Seedance 2.5 Spicy Text-to-Video | $0.60 / generation (scales with resolution) |
-| Seedance 2.5 Spicy Image-to-Video | $0.60 / generation (scales with resolution) |
-| Seedance 2.5 Spicy First & Last Frame | $1.87 / generation (scales with resolution) |
-| Seedance 2.5 Spicy Omni Reference | $1.87 / generation (scales with resolution) |
-| Seedance 2.5 Spicy Video Edit | $1.87 / generation (scales with resolution) |
-| Seedance 2.5 Spicy Video Extend | $1.87 / generation (scales with resolution) |
-| Seedance 2.5 Spicy Motion Control | $1.65 / generation |
-
-Pricing is illustrative and subject to change — check [muapi.ai/seedance-2.5-spicy](https://muapi.ai/seedance-2.5-spicy?utm_source=github&utm_medium=readme&utm_campaign=seedance-2.5-spicy-api) for current rates.
+| Provider | Type | Rates (Per Second) | Best For |
+|---|---|---|---|
+| **BytePlus ModelArk** | Official ByteDance Cloud | 480p: **$0.10/s** · 720p: **$0.23/s** · 1080p: **$0.45/s** · 4K: **$0.70/s** | **Recommended**: Lowest cost, official enterprise SLA, 480p drafts valid 7 days |
+| **fal.ai** | US Enterprise Queue | 480p: **$0.22/s** · 720p: **$0.47/s** · 1080p: **$0.75/s** · 4K: **$1.10/s** | **Recommended for US**: Zero cold starts, `/draft/complete` endpoint |
+| **WaveSpeedAI** | REST v3 Provider | 480p: **$0.18/s** · 720p: **$0.36/s** · 1080p: **$0.60/s** · 4K: **$0.95/s** | Drop-in REST endpoints for all 7 workflows |
+| **Replicate** | Unified Multimodal | 480p: **$0.20/s** · 720p: **$0.40/s** · 1080p: **$0.68/s** · 4K: **$1.00/s** | Single multimodal prediction endpoint |
+| **MuAPI** | Legacy Wrapper | ~$0.60 - $1.87 / generation | Legacy backward compatibility |
 
 ---
 
@@ -280,7 +308,7 @@ Pricing is illustrative and subject to change — check [muapi.ai/seedance-2.5-s
 | `video_edit` | `prompt`, `video_url`, `images_list`, `audios_list`, `resolution`, `duration`, `generate_audio`, `seed`, `high_bitrate` | Video Edit. |
 | `video_extend` | `prompt`, `video_url`, `last_image`, `resolution`, `duration`, `generate_audio`, `seed`, `high_bitrate` | Video Extend. |
 | `motion_control` | `video_url`, `images_list`, `prompt`, `aspect_ratio`, `duration`, `seed`, `high_bitrate`, `generate_audio` | Motion Control recast. |
-| `upload_file` | `file_path` | Upload a local file (image, video, or audio) to MuAPI. |
+| `upload_file` | `file_path` | Upload a local file (image, video, or audio) for generation tasks. |
 | `get_result` | `request_id` | Check task status. |
 | `wait_for_completion` | `request_id`, `poll_interval`, `timeout` | Blocking helper for generation tasks. |
 

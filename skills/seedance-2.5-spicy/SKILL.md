@@ -6,21 +6,32 @@ metadata:
   openclaw:
     requires:
       env:
+        - ARK_API_KEY
+        - FAL_KEY
+        - WAVESPEED_API_KEY
+        - REPLICATE_API_TOKEN
         - MUAPI_API_KEY
       bins:
         - python3.11
     emoji: 🌶️
-    homepage: https://muapi.ai
+    homepage: https://docs.byteplus.com/en/docs/ModelArk/2607688
     os: ["macos", "linux"]
 ---
 
 # Seedance 2.5 Spicy
 
-Seedance 2.5 Spicy is the relaxed-moderation variant of ByteDance's Seedance 2.5 flagship video model, delivered via MuAPI. It generates photorealistic 4K video, up to 30-second clips, and native audio, with reduced content-safety filtering and more dramatic, higher-contrast motion than the standard tier.
+Seedance 2.5 Spicy is the relaxed-moderation variant of ByteDance's Seedance 2.5 flagship video model. It generates photorealistic 4K video, up to 30-second clips, and native audio, with reduced content-safety filtering and more dramatic, higher-contrast motion than the standard tier. Supports official BytePlus ModelArk, fal.ai, WaveSpeedAI, Replicate, and MuAPI.
 
 ## Prerequisites
 
-- **MUAPI_API_KEY**: You must have an API key from [muapi.ai](https://muapi.ai). Set it as an environment variable.
+Set an API key for your chosen provider in your environment or `.env` file:
+- **BytePlus ModelArk (Official)**: `ARK_API_KEY` (Default, lowest cost $0.10/s)
+- **fal.ai (US Enterprise)**: `FAL_KEY`
+- **WaveSpeedAI**: `WAVESPEED_API_KEY`
+- **Replicate**: `REPLICATE_API_TOKEN`
+- **MuAPI (Legacy)**: `MUAPI_API_KEY`
+
+Specify the provider using `--provider <byteplus|fal|wavespeed|replicate|muapi>` or set `SEEDANCE_PROVIDER`.
 
 ## Usage Guide
 
@@ -72,6 +83,8 @@ python3.11 skills/seedance-2.5-spicy/seedance_2_5_spicy_cli.py motion-control --
 
 ## Commands Reference
 
+Global Options: `--provider <byteplus|fal|wavespeed|replicate|muapi>` (selects upstream provider).
+
 | Command | Arguments | Description |
 | :--- | :--- | :--- |
 | `t2v` | `--prompt`, `--aspect_ratio`, `--duration`, `--resolution`, `--no_audio`, `--camera_fixed`, `--high_bitrate`, `--draft`, `--draft_request_id`, `--wait` | Text to Video |
@@ -82,3 +95,4 @@ python3.11 skills/seedance-2.5-spicy/seedance_2_5_spicy_cli.py motion-control --
 | `video-extend` | `--prompt`, `--video_url`, `--last_image`, `--resolution`, `--duration`, `--no_audio`, `--seed`, `--high_bitrate`, `--wait` | Video Extend |
 | `motion-control` | `--video_url`, `--images`, `--prompt`, `--aspect_ratio`, `--duration`, `--seed`, `--high_bitrate`, `--generate_audio`, `--wait` | Motion Control recast |
 | `status` | `--request_id` | Check Task Status |
+| `upload` | `--file` | Upload local image/video/audio file |
